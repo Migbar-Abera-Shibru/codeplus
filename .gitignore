@@ -1,0 +1,36 @@
+# Python
+backend/__pycache__/
+backend/.pytest_cache/
+backend/.venv/
+backend/venv/
+backend/*.py[cod]
+
+# Environment
+backend/.env
+frontend/.env
+
+# Node
+frontend/node_modules/
+
+# Vite
+frontend/dist/
+
+# Python build
+*.egg-info/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Docker
+*.log
+
+# Coverage
+.coverage
+htmlcov/
+
+# Cache
+.pytest_cache/
+.mypy_cache/
