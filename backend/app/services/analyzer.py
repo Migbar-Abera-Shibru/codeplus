@@ -188,6 +188,41 @@ class DeveloperAnalyzer:
             return 0
         
         max_streak = current = 1
+        for i in range(1, len(sorted_days)):
+            prev = datetime.strptime(sorted_days[i-1], "%Y-%m-%d")
+            curr = datetime.strptime(sorted_days[i], "%Y-%m-%d")
+            if (curr-prev).days == 1:
+                current += 1
+                max_streak = max(max_streak, current)
+            else:
+                current = 1
+
+        return max_streak
+    
+    def _calculate_current_streak(self, sorted_days: list) -> int:
+        if not sorted_days:
+            return 0 
+        
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        from datetime import timedelta
+        yesterday = (datetime.now(timezone.utc).replace(hour=0) - timedelta(days=1)).strftime("%Y-%m-%d")
+
+        if sorted_days[-1] not in [today, yesterday]:
+            return 0 
+        
+        streak = 1
+        for i in range(len(sorted_days) - 1, 0, -1):
+            prev = datetime.strptime(sorted_days[i-1], "%Y-%m-%d")
+            curr = datetime.strptime(sorted_days[i], "%Y-%m-%d")
+            if (curr-prev).days == 1:
+                streak += 1
+            else:
+                break
+        return streak
+
+
+
+
 
         
 
