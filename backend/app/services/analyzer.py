@@ -219,6 +219,83 @@ class DeveloperAnalyzer:
             else:
                 break
         return streak
+    
+    def _analyze_complexity(self, repostiories: list) -> dict:
+        breakdown = []
+
+        for repo in repostiories:
+            if repo.get("fork"):
+                continue
+
+            score = 0.0
+
+            # size score
+            size_kb = repo.get("size", 0)
+            size_score = min(size_kb / 51200, 1.0)
+            score += size_score * 0.15
+
+            # language diversity
+            topics = repo.get("topics", [])
+            topic_score = min(len(topics) / 5, 1.0)
+            score += topic_score * 0.05
+
+            # has README
+            score += 0.10 if repo.get("has_wiki") or repo.get("description") else 0
+
+            # has description
+            score += 0.05 if repo.get("description") else 0
+
+            # open issues
+            issues = repo.get("open_issue_count", 0)
+            issue_score = min(issues / 20, 1.0)
+            score += issue_score * 0.10
+
+            # forks
+            forks = repo.get("forks_count", 0)
+            fork_score = min(forks / 50, 1.0)
+            score += fork_score * 0.15
+
+            # stars
+            stars = repo.get("stargazers_count", 0)
+            star_score = min(stars / 100, 1.0)
+            score += star_score * 0.15
+
+            # repo age
+            created = datetime.strptime(
+                repo["created_at"], "%Y-%m-%dT%H:%M:%SZ"
+            ).replace(tzinfo=timezone.utc)
+            age_days = (datetime.now(timezone.utc) - created).days
+            age_score = min(age_days / 730, 1.0)
+            score += age_score * 1.0
+
+            # watchers
+            watchers = repo.get("watchers_count", 0)
+            watcher_score= min(watchers / 50, 1.0)
+            score += watcher_score * 0.15
+
+            final_score = round(score + 100, 1)
+
+            breakdown.append({
+                "name": repo["name"],
+                "score": final_score,
+                "stars": repo.get("stargazers_count", 0),
+                "forks": repo.get("forks_count", 0),
+                "language": repo.get("language"),
+                "url": repo.get("html_url"),
+                "complexity_tier": self.complexity_tier(final_score)
+            })
+        
+        breakdown.sort(key=lambda x: x["score"], reverse=True)
+        avg_score = (
+            sum(r["score"] for r in breakdown) / len(breakdown)
+            if breakdown else 0 
+        )
+
+        return {
+            "breakdown": breakdown[:20],
+            "avg_score": round(avg_score, 1)
+        }
+            
 
 
 
