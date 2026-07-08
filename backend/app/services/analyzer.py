@@ -295,10 +295,23 @@ class DeveloperAnalyzer:
             "breakdown": breakdown[:20],
             "avg_score": round(avg_score, 1)
         }
-            
+    def _complexity_tier(self, score: float) -> str:
+        if score >= 70: return "High"
+        if score >=40: return "Medium"
+        return "Low"
+    
+    def _analyze_collaboration(self, repositories: list) -> dict:
+        total_forks = sum(r.get("forks_count", 0) for r in repositories if not r.get("fork"))
+        total_watchers = sum(r.get("watchers_count", 0) for r in repositories if not r.get("fork"))
 
+        estimated_collaborators = total_forks
 
-
+        return {
+            "total_collaborators": estimated_collaborators,
+            "total_forks": total_forks,
+            "total_watchers": total_watchers,
+            "top_collaborators": []
+        }
 
 
         
