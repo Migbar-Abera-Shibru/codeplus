@@ -312,6 +312,32 @@ class DeveloperAnalyzer:
             "total_watchers": total_watchers,
             "top_collaborators": []
         }
+    
+    def _calculate_consistency_score(self, activity_stats: dict) -> float:
+        active_ratio = min(activity_stats["active_days"] / 90, 1.0)
+        streak_ratio = min(activity_stats["longest_streak"] / 30, 1.0)
+        commmit_ratio = min(activity_stats["total_commits"] / 200, 1.0)
+
+        score = (active_ratio * 0.50) + (streak_ratio * 0.30) + (commmit_ratio * 0.20)
+        return round(score * 100, 1)
+    
+    def _calculate_complexity_score(self, complexity_stats: dict) -> float:
+        return complexity_stats["avg_score"]
+    
+    def _calculate_collaboration_score(self, collaboration_stats: dict) -> float:
+        forks = collaboration_stats["total_forks"]
+        score = min(forks / 100, 1.0) * 100
+        return round(score, 1)
+    
+    def _calculate_overall_score(
+            self,
+            consistency: float,
+            collaboration: float,
+            complexity: float
+    ) -> float:
+        return round( 
+            (consistency * 0.40) + (complexity * 0.35) + (collaboration * 0.25), 1
+        )
 
 
         
