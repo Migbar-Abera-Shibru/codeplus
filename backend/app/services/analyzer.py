@@ -338,6 +338,74 @@ class DeveloperAnalyzer:
         return round( 
             (consistency * 0.40) + (complexity * 0.35) + (collaboration * 0.25), 1
         )
+    
+    def _determine_developer_type(self, language_stats: dict) -> str:
+        if not language_stats["top_languages"]:
+            return "Developer"
+        
+        top_langs = [l.language for l in language_stats["top_languages"][:3]]
+
+        web_fronend = {"JavaScript", "TypeScript", "HTML", "CSS", "Vue", "Swelte"}
+        web_backend = {"Python", "Ruby", "PHP", "Go", "Java", "C#", "Rust"}
+        mobile = {"Swift", "Kotlin", "Dart", "Objective-C"}
+        systems = {"C", "C++", "Rust", "Assembly", "Zig"}
+        data = {"Python", "R", "Julia", "MATLAB"}
+
+        has_frontend = any( l in web_fronend for l in top_langs)
+        has_backend = any( l in web_backend for l in top_langs)
+        has_mobile = any(l in mobile for l in top_langs)
+        has_systems = any(l in systems for l in top_langs)
+
+        if has_frontend and has_backend:
+            return "Full-Stack Developer"
+        if has_backend:
+            return "Bakcend Developer"
+        if has_frontend:
+            return "Frontend Developer"
+        if has_mobile:
+            return "Mobile Application Developer"
+        if has_systems:
+            return "Systems Developer"
+        return "Software Develoepr"
+    
+    def _generate_summary(
+            self,
+            user_data: dict,
+            language_stats: dict,
+            activity_stats: dict,
+            consistency_score: float,
+            complexity_score: float,
+    ) -> str:
+        
+        name = user_data.get("name") or user_data["login"]
+        top_lang = (
+            language_stats["top_languages"][0].language
+            if language_stats["top_languages"] else "multiple languages"
+        )
+
+        consistency_label = (
+            "highly_consistent" if consistency_score >= 70
+            else "moderately active" if consistency_score >= 40
+            else "occasionally active"
+        )
+
+        complexity_label = (
+            "comples, production-grade" if complexity_score >= 60
+            else "medium-complexity" if complexity_score >= 30
+            else "exploratory"
+        )
+
+        return (
+            f"{name} is a {consistency_label} developer who primarly works in"
+            f"{top_lang}, with {activity_stats['active_days']} active coding days"
+            f"in the last 90 days and a longest streak of "
+            f"{activity_stats['longest_streak']} days."
+            f"Their projects tend to be {complexity_label} in nature"
+        )
+    
+
+
+
 
 
         
