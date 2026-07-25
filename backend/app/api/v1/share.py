@@ -37,3 +37,25 @@ async def generate_share_link(
         generated_at = profile.generated_at.isoformat() if profile.generated_at else None
 
     )
+
+@router.get("/{share_token}", response_model=ReportResponse)
+async def get_shared_report(
+        share_token:str,
+        db: AsyncSession = Depends(get_db)
+
+):
+    result = await db.execute(
+        select(CachedProfile).where(
+            ChachedProfile.share_token == share_token,
+            CachedProfile.is_public == True
+        )
+    )
+    profile = result.scalar_one_or_none()
+
+    if not profile:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Report not found or not public")
+
+    return profile.report_data  
+        
