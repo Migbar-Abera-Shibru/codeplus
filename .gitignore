@@ -34,3 +34,8 @@ htmlcov/
 # Cache
 .pytest_cache/
 .mypy_cache/
+
+#
+.github/workflows/ci.yml
+.github/workflows/deploy.yml
+.github/workflows/backend-ci.yml
