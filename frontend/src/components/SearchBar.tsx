@@ -1,5 +1,5 @@
 // frontend/src/components/SearchBar.tsx
-import { useState, FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Search, Loader2 } from 'lucide-react';
 
 interface SearchBarProps {
@@ -10,7 +10,7 @@ interface SearchBarProps {
 }
 
 export function SearchBar({ value, onChange, onSearch, isLoading }: SearchBarProps) {
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (value.trim()) {
       onSearch();

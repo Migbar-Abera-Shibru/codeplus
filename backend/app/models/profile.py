@@ -10,7 +10,7 @@ class CachedProfile(Base):
     __tablename__ = "cached_profiles"
 
     id = Column(Integer, primary_key=True)
-    username = Column(String(100), unique=True, nullable=Fale, index=True)
+    username = Column(String(100), unique=True, nullable=False, index=True)
 
     # Raw github data(cached)
     user_data = Column(JSON)

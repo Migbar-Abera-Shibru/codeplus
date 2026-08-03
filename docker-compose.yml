@@ -1,8 +1,9 @@
+# docker-compose.yml
 services:
   postgres:
     image: postgres:15
-    environment: 
-      POSTGRES_DB: codeplus
+    environment:
+      POSTGRES_DB: codepulse
       POSTGRES_USER: dev
       POSTGRES_PASSWORD: devpassword
     ports:
@@ -11,7 +12,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   redis:
-    image: redis:7-alphine
+    image: redis:7-alpine
     ports:
       - "6379:6379"
 
@@ -24,9 +25,13 @@ services:
       - redis
     env_file: ./backend/.env
 
-  froned:
+  frontend:
     build: ./frontend
-    ports: 
+    ports:
       - "3000:3000"
-    depends_on: 
+    depends_on:
       - backend
+
+# Define volumes here at the bottom
+volumes:
+  postgres_data:

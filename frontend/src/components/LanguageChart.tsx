@@ -1,5 +1,5 @@
 // frontend/src/components/LanguageChart.tsx
-import { LanguageStats } from '../services/api';
+import type { LanguageStats } from '../services/api';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 interface LanguageChartProps {

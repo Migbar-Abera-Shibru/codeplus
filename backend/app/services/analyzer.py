@@ -31,11 +31,11 @@ class DeveloperReport:
     active_days_90d: int
     longest_streak_days: int
     current_streak_days: int
-    contribution_consistentcy: float # 0-100
+    contribution_consistency: float # 0-100
 
     # project analysis
     total_stars: int
-    avg_compleity_score: float
+    avg_complexity_score: float
     repo_complexity_breakdown: list[dict]
 
     # collaborations
@@ -122,7 +122,7 @@ class DeveloperAnalyzer:
         repo_counts = defaultdict(int)
 
         for repo_name, lang_data in languages_by_repo.items():
-            if not lan_data:
+            if not lang_data:
                 continue
             for language, byte_count in lang_data.items():
                 total_bytes[language] += byte_count
@@ -282,7 +282,7 @@ class DeveloperAnalyzer:
                 "forks": repo.get("forks_count", 0),
                 "language": repo.get("language"),
                 "url": repo.get("html_url"),
-                "complexity_tier": self.complexity_tier(final_score)
+                "complexity_tier": self._complexity_tier(final_score)
             })
         
         breakdown.sort(key=lambda x: x["score"], reverse=True)

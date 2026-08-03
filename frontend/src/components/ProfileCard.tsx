@@ -1,5 +1,5 @@
 // frontend/src/components/ProfileCard.tsx
-import { DeveloperReport } from '../services/api';
+import type { DeveloperReport } from '../services/api';
 import { Calendar, MapPin, Users, GitFork, Star } from 'lucide-react';
 
 interface ProfileCardProps {

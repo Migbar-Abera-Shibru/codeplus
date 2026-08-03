@@ -8,7 +8,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 60000, // 60 seconds for long analysis
+  timeout: 60000,
 });
 
 // Add auth token to requests
@@ -19,6 +19,10 @@ apiClient.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// ============================================
+// INTERFACES / TYPES - All exported
+// ============================================
 
 export interface LanguageStats {
   language: string;
@@ -74,6 +78,10 @@ export interface DeveloperReport {
   profile_summary: string;
   generated_at: string;
 }
+
+// ============================================
+// API FUNCTIONS
+// ============================================
 
 export async function analyzeProfile(username: string, forceRefresh = false): Promise<DeveloperReport> {
   const response = await apiClient.get(`/analyze/${encodeURIComponent(username)}`, {

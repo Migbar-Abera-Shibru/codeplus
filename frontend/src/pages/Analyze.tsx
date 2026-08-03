@@ -1,28 +1,29 @@
 // frontend/src/pages/Analyze.tsx
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { analyzeProfile } from '../services/api'
-import { SearchBar } from '../components/SearchBar'
-import { ProfileCard } from '../components/ProfileCard'
-import { LanguageChart } from '../components/LanguageChart'
-import { ActivityHeatmap } from '../components/ActivityHeatmap'
-import { ScoreCards } from '../components/ScoreCards'
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { analyzeProfile } from '../services/api';
+import type { DeveloperReport } from '../services/api';
+import { SearchBar } from '../components/SearchBar';
+import { ProfileCard } from '../components/ProfileCard';
+import { LanguageChart } from '../components/LanguageChart';
+import { ActivityHeatmap } from '../components/ActivityHeatmap';
+import { ScoreCards } from '../components/ScoreCard';
+import { ErrorDisplay } from '../components/ErrorDisplay';
 
 export function AnalyzePage() {
-  const [username, setUsername] = useState<string>('')
-  const [searchedUser, setSearchedUser] = useState<string>('')
+  const [username, setUsername] = useState<string>('');
+  const [searchedUser, setSearchedUser] = useState<string>('');
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['profile', searchedUser],
     queryFn: () => analyzeProfile(searchedUser),
     enabled: !!searchedUser,
-    staleTime: 1000 * 60 * 30,  // 30 minutes — don't re-fetch constantly
+    staleTime: 1000 * 60 * 30,
     retry: (failureCount, error: any) => {
-      // Don't retry on 404 or 429
-      if (error?.status === 404 || error?.status === 429) return false
-      return failureCount < 2
+      if (error?.status === 404 || error?.status === 429) return false;
+      return failureCount < 2;
     }
-  })
+  });
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -47,16 +48,16 @@ export function AnalyzePage() {
           <div className="mt-8 space-y-6">
             <ProfileCard profile={data} />
             <ScoreCards
-              consistency={data.consistency_score}
-              complexity={data.complexity_score}
-              collaboration={data.collaboration_score}
-              overall={data.overall_score}
+              consistency={data.scores.consistency_score}
+              complexity={data.scores.complexity_score}
+              collaboration={data.scores.collaboration_score}
+              overall={data.scores.overall_score}
             />
             <LanguageChart languages={data.top_languages} />
-            <ActivityHeatmap commitDays={data.commit_days_90d} />
+            <ActivityHeatmap commitDays={data.activity.commit_days_90d} />
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }

@@ -1,11 +1,13 @@
 // frontend/src/pages/SharedReport.tsx
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getSharedReport, DeveloperReport } from '../services/api';
+import { getSharedReport } from '../services/api';
+import type { DeveloperReport } from '../services/api';
 import { ProfileCard } from '../components/ProfileCard';
-import { ScoreCards } from '../components/ScoreCards';
+import { ScoreCards } from '../components/ScoreCard';
 import { LanguageChart } from '../components/LanguageChart';
 import { ActivityHeatmap } from '../components/ActivityHeatmap';
+import { ErrorDisplay } from '../components/ErrorDisplay';
 import { Loader2 } from 'lucide-react';
 
 export function SharedReportPage() {
@@ -28,9 +30,8 @@ export function SharedReportPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-red-400">Report Not Found</h2>
-          <p className="text-gray-400 mt-2">This report may have been removed or is not public.</p>
+        <div className="w-full max-w-md">
+          <ErrorDisplay error={error} />
         </div>
       </div>
     );
