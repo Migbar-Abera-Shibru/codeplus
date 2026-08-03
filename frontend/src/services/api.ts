@@ -21,13 +21,13 @@ apiClient.interceptors.request.use((config) => {
 });
 
 // ============================================
-// INTERFACES / TYPES - All exported
+// INTERFACES / TYPES - Matches backend response
 // ============================================
 
 export interface LanguageStats {
   language: string;
-  percentage: number;
   bytes_of_code: number;
+  percentage: number;
   repo_count: number;
 }
 
@@ -41,14 +41,6 @@ export interface RepositoryComplexity {
   complexity_tier: string;
 }
 
-export interface ActivityStats {
-  total_commits_90d: number;
-  active_days_90d: number;
-  commit_days_90d: string[];
-  longest_streak_days: number;
-  current_streak_days: number;
-}
-
 export interface DeveloperReport {
   username: string;
   display_name: string;
@@ -58,22 +50,34 @@ export interface DeveloperReport {
   public_repos: number;
   followers: number;
   account_age_days: number;
+  
+  // Language data - flat structure
   top_languages: LanguageStats[];
   language_diversity_score: number;
-  activity: ActivityStats;
+  
+  // Activity data - flat structure (not nested in "activity")
+  total_commits_90d: number;
+  active_days_90d: number;
+  longest_streak_days: number;
+  current_streak_days: number;
   contribution_consistency: number;
+  
+  // Project data
   total_stars: number;
   avg_complexity_score: number;
   repo_complexity_breakdown: RepositoryComplexity[];
+  
+  // Collaboration data
   total_collaborators: number;
   collaboration_score: number;
   top_collaborators: Record<string, any>[];
-  scores: {
-    consistency_score: number;
-    complexity_score: number;
-    collaboration_score: number;
-    overall_score: number;
-  };
+  
+  // Scores - flat structure (not nested in "scores")
+  complexity_score: number;
+  consistency_score: number;
+  overall_score: number;
+  
+  // Profile type and summary
   developer_type: string;
   profile_summary: string;
   generated_at: string;

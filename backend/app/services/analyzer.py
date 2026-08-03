@@ -3,6 +3,9 @@ from typing import Optional
 from collections import defaultdict
 from datetime import datetime, timezone
 import math
+import logging 
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class LanguageStats:
@@ -41,12 +44,13 @@ class DeveloperReport:
     # collaborations
     total_collaborators: int
     collaboration_score: float
-    top_colaborators: list[dict]
+    top_collaborators: list[dict]
 
     # scores
     complexity_score: float
     consistency_score: float
     overall_score: float
+    
 
     # developer profile type
     developer_type: str   # full-stack, backend developer, etc.
@@ -55,18 +59,16 @@ class DeveloperReport:
     generated_at: str
 
 class DeveloperAnalyzer: 
-    def analyze( 
-            self,
-            user_data: dict,
-            repositories: list,
-            events: list,
-            languages_by_repo: dict
-    ) -> DeveloperReport:
+    # backend/app/services/analyzer.py - Update analyze method
+
+    async def analyze(self, user_data: dict, repositories: list, events: list, languages_by_repo: dict, github_client=None, username: str = None):
         """
         Main entry point. Orchestrates all analysis.
         """
+        # Pass repositories, client, and username to activity analysis - now with await
+        activity_stats = await self._analyze_activity(events, repositories, github_client, username)
+        
         language_stats = self._analyze_languages(languages_by_repo)
-        activity_stats = self._analyze_activity(events)
         complexity_stats = self._analyze_complexity(repositories)
         collaboration_stats = self._analyze_collaboration(repositories)
 
@@ -79,7 +81,8 @@ class DeveloperAnalyzer:
 
         developer_type = self._determine_developer_type(language_stats)
         profile_summary = self._generate_summary(
-            user_data, language_stats, activity_stats, complexity_score, consistency_score
+            user_data, language_stats, activity_stats,
+            consistency_score, complexity_score
         )
 
         account_created = datetime.strptime(
@@ -153,32 +156,69 @@ class DeveloperAnalyzer:
             "diversity_score": diversity_score
         }
 
-    def _analyze_activity(self, events: list) -> dict:
+
+    # backend/app/services/analyzer.py - Make _analyze_activity async
+
+    async def _analyze_activity(self, events: list, repositories: list = None, client=None, username: str = None) -> dict:
+        """
+        Parse GitHub events to extract commit activity.
+        Uses events for active days and repository data for commit counts.
+        """
         commit_days = set()
-        total_commits = 0 
-
-        for event in events: 
-            if event.get("type") != "PushEvent":
-                continue
-
-            created_at = datetime.strptime(
-                event["created_at"], "%Y-%m-%dT%H:%M:%SZ"
-            ).replace(tzinfo=timezone.utc)
-
-            day_str = created_at.strftime("%Y-%m-%d")
-            commit_days.add(day_str)
-
-            payload = event.get("payload", {})
-            total_commits += len(payload.get("commits", []))
-
-        # calculating streaks 
+        total_commits = 0
+        
+        # First, get active days from events
+        event_types = {}
+        push_events = []
+        
+        for event in events:
+            event_type = event.get("type", "unknown")
+            event_types[event_type] = event_types.get(event_type, 0) + 1
+            
+            if event_type == "PushEvent":
+                push_events.append(event)
+                created_at = datetime.strptime(
+                    event["created_at"], "%Y-%m-%dT%H:%M:%SZ"
+                ).replace(tzinfo=timezone.utc)
+                day_str = created_at.strftime("%Y-%m-%d")
+                commit_days.add(day_str)
+        
+        # If we have events but no commit data, try to get commits from repositories
+        if len(push_events) > 0 and total_commits == 0:
+            logger.info("PushEvents found but no commit data. Fetching from repositories...")
+            
+            # Count commits from repositories
+            if repositories and client and username:
+                import asyncio
+                commit_tasks = []
+                for repo in repositories[:10]:  # Limit to top 10 repos
+                    if not repo.get("fork"):
+                        commit_tasks.append(client.get_commit_count(username, repo["name"]))
+                
+                if commit_tasks:
+                    commit_counts = await asyncio.gather(*commit_tasks, return_exceptions=True)
+                    for repo, count in zip(repositories[:10], commit_counts):
+                        if not isinstance(count, Exception):
+                            total_commits += count
+                            logger.debug(f"Repo {repo['name']}: {count} commits")
+            
+            # If still no commits, use PushEvent count as estimate
+            if total_commits == 0:
+                total_commits = len(push_events)  # Estimate: 1 commit per push
+                logger.warning(f"Using estimated commits: {total_commits} (from {len(push_events)} push events)")
+        
+        # Calculate streaks
         sorted_days = sorted(commit_days)
         longest_streak = self._calculate_longest_streak(sorted_days)
         current_streak = self._calculate_current_streak(sorted_days)
 
+        logger.info(f"Activity summary: {total_commits} commits, {len(commit_days)} active days, "
+                    f"longest streak: {longest_streak}, current streak: {current_streak}")
+
         return {
             "total_commits": total_commits,
             "active_days": len(commit_days),
+            "commit_days": sorted_days,
             "longest_streak": longest_streak,
             "current_streak": current_streak
         }
@@ -402,6 +442,9 @@ class DeveloperAnalyzer:
             f"{activity_stats['longest_streak']} days."
             f"Their projects tend to be {complexity_label} in nature"
         )
+    # backend/app/services/analyzer.py - Update the analyze method
+
+    
     
 
 

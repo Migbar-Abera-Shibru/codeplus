@@ -186,3 +186,31 @@ class GitHubClient:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
+
+    # Add this method to GitHubClient
+
+    # backend/app/services/github_client.py - Add this method
+
+    async def get_commit_count(self, owner: str, repo: str) -> int:
+        """
+        Get total commit count for a repository.
+        Uses the /repos/{owner}/{repo}/commits endpoint with pagination.
+        """
+        try:
+            commits = await self._paginate(
+                f"/repos/{owner}/{repo}/commits",
+                params={"per_page": 100},
+                max_pages=3  # Limit to 3 pages to avoid rate limits
+            )
+            return len(commits)
+        except Exception as e:
+            logger.warning(f"Could not fetch commit count for {repo}: {e}")
+            return 0
+
+    async def get_commit_activity(self, owner: str, repo: str) -> Optional[List[Dict]]:
+        """Get weekly commit activity for a repository."""
+        try:
+            return await self._request(f"/repos/{owner}/{repo}/stats/commit_activity")
+        except Exception as e:
+            logger.warning(f"Could not fetch commit activity for {repo}: {e}")
+            return None

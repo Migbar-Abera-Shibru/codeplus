@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/analyze", tags=["analyze"])
 
+# backend/app/api/v1/analyze.py - Add debug logging
+
 @router.get("/{username}")
 async def analyze_profile(
     username: str,
@@ -37,8 +39,7 @@ async def analyze_profile(
     try:
         async with GitHubClient() as client:
             try:
-                # Add overall timeout for the entire analysis
-                async with asyncio.timeout(60):  # 60 second overall timeout
+                async with asyncio.timeout(60):
                     # Fetch user data
                     user_data = await client.get_user(username)
                     if not user_data:
@@ -62,9 +63,41 @@ async def analyze_profile(
                     
                     if isinstance(events, Exception):
                         logger.warning(f"Error fetching events: {events}")
-                        events = []  # Continue with empty events
+                        events = []
+                    
+                    # ===== DEBUG: Log event information =====
+                    logger.info(f"Fetched {len(events)} events for {username}")
+                    
+                    if events:
+                        # Count event types
+                        event_types = {}
+                        push_events = []
+                        for event in events[:30]:  # Check first 30 events
+                            event_type = event.get("type", "unknown")
+                            event_types[event_type] = event_types.get(event_type, 0) + 1
+                            if event_type == "PushEvent":
+                                push_events.append(event)
+                        
+                        logger.info(f"Event types: {event_types}")
+                        logger.info(f"PushEvents found: {len(push_events)}")
+                        
+                        # Log sample PushEvent if available
+                        if push_events:
+                            sample = push_events[0]
+                            payload = sample.get("payload", {})
+                            commits = payload.get("commits", [])
+                            size = payload.get("size", 0)
+                            logger.info(f"Sample PushEvent: {len(commits)} commits, size: {size}, repo: {sample.get('repo', {}).get('name', 'unknown')}")
+                        else:
+                            # Log sample of other events
+                            if events:
+                                sample = events[0]
+                                logger.info(f"Sample event type: {sample.get('type')}, repo: {sample.get('repo', {}).get('name', 'unknown')}")
+                    else:
+                        logger.warning(f"No events returned for {username}")
+                    # ===== END DEBUG =====
 
-                    # Fetch languages for top repos (limited to 5 to save time)
+                    # Fetch languages for top repos
                     languages_by_repo = {}
                     repo_tasks = []
                     for repo in repositories[:5]:
@@ -103,7 +136,7 @@ async def analyze_profile(
     # Analyze
     try:
         analyzer = DeveloperAnalyzer()
-        report = analyzer.analyze(user_data, repositories, events, languages_by_repo)
+        report = await analyzer.analyze(user_data, repositories, events, languages_by_repo, github_client=client, username=username)
     except Exception as e:
         logger.error(f"Error analyzing data: {e}")
         raise HTTPException(status_code=500, detail=f"Error analyzing data: {str(e)}")
