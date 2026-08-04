@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AnalyzePage } from './pages/Analyze';
 import { SharedReportPage } from './pages/SharedReport';
+import './index.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
