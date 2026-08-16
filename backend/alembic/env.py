@@ -24,7 +24,15 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Set the database URL from settings
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+# Convert async drivers to sync for Alembic
+db_url = settings.DATABASE_URL
+if "asyncpg" in db_url:
+    db_url = db_url.replace("postgresql+asyncpg://", "postgresql://")
+elif "aiosqlite" in db_url:
+    db_url = db_url.replace("sqlite+aiosqlite://", "sqlite:///")
+elif "sqlite:///" not in db_url and "sqlite://" in db_url:
+    db_url = db_url.replace("sqlite://", "sqlite:///")
+config.set_main_option("sqlalchemy.url", db_url)
 
 # Add your model's MetaData object here
 # for 'autogenerate' support
