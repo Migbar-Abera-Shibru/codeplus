@@ -1,175 +1,30 @@
-// frontend/src/pages/Analyze.tsx
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowDown, ArrowUpRight, Code2, Github, Radar, ShieldCheck, Sparkles } from 'lucide-react';
 import { analyzeProfile } from '../services/api';
 import { SearchBar } from '../components/SearchBar';
 import { DeveloperDashboard } from '../components/DeveloperDashboard';
 import { ErrorDisplay } from '../components/ErrorDisplay';
-import { 
-  Code2, 
-  Github, 
-  TrendingUp, 
-  Users, 
-  GitBranch,
-  Sparkles,
-  Zap,
-  Star,
-  Activity
-} from 'lucide-react';
+
+function SampleReport() { return <div className="surface relative overflow-hidden rounded-3xl p-5 sm:p-7">
+  <div className="absolute inset-x-0 top-0 h-px accent-line" />
+  <div className="mb-6 flex items-center justify-between"><span className="font-mono-label text-[10px] text-fuchsia-300">Sample report</span><span className="rounded-full border border-white/10 px-2 py-1 font-mono text-[10px] text-zinc-500">PREVIEW</span></div>
+  <div className="flex items-center gap-3"><div className="grid size-12 place-items-center rounded-2xl bg-fuchsia-400/10 text-fuchsia-300"><Code2 className="size-6" /></div><div><p className="font-semibold text-zinc-100">Your developer signal</p><p className="font-mono text-xs text-zinc-500">generated from public activity</p></div><div className="ml-auto text-right"><p className="font-mono text-3xl font-bold text-cyan-300">86</p><p className="font-mono-label text-[9px] text-zinc-600">overall</p></div></div>
+  <div className="mt-7 grid grid-cols-3 gap-2">{[['CONSISTENCY','91'],['COMPLEXITY','78'],['COLLAB','84']].map(([label,value]) => <div key={label} className="surface-muted rounded-xl p-3"><p className="font-mono-label text-[9px] text-zinc-500">{label}</p><p className="mt-2 text-xl font-semibold text-zinc-100">{value}</p><div className="mt-2 h-1 rounded-full bg-zinc-800"><div className="h-full w-4/5 rounded-full accent-line" /></div></div>)}</div>
+  <div className="mt-5 flex items-end gap-1 border-b border-white/10 pb-3">{[30,48,42,68,54,82,64,92,74,88,66,96].map((height,index) => <div key={index} className="flex-1 rounded-t-sm bg-fuchsia-300/50" style={{height: `${height/2}px`}} />)}</div>
+</div>; }
 
 export function AnalyzePage() {
-  const [username, setUsername] = useState<string>('');
-  const [searchedUser, setSearchedUser] = useState<string>('');
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['profile', searchedUser],
-    queryFn: () => analyzeProfile(searchedUser),
-    enabled: !!searchedUser,
-    staleTime: 1000 * 60 * 5,
-    retry: (failureCount, error: any) => {
-      if (error?.status === 404 || error?.status === 429) return false;
-      return failureCount < 2;
-    },
-  });
-
-  useEffect(() => {
-    if (data) setIsFirstLoad(false);
-  }, [data]);
-
-  const stats = [
-    { icon: Github, label: 'Powered by GitHub API', color: 'text-gray-400' },
-    { icon: TrendingUp, label: 'Real-time analysis', color: 'text-gray-400' },
-    { icon: Users, label: 'Public profiles', color: 'text-gray-400' },
-    { icon: GitBranch, label: 'Open source', color: 'text-gray-400' },
-  ];
-
-  return (
-    <div className="min-h-screen bg-[#05050a] overflow-hidden">
-      {/* Animated Background Orbs */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="orb w-[600px] h-[600px] -top-48 -left-48 bg-blue-600/20" />
-        <div className="orb w-[500px] h-[500px] top-1/2 -right-48 bg-purple-600/20" />
-        <div className="orb w-[400px] h-[400px] bottom-0 left-1/2 bg-pink-600/10" />
-        <div className="absolute inset-0 bg-grid" />
-      </div>
-
-      {/* Main Content */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center mb-12 md:mb-16"
-        >
-          <motion.div
-            className="flex items-center justify-center gap-3 mb-6"
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur-2xl opacity-50 animate-pulse-ring" />
-              <div className="relative p-4 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl border border-white/10 backdrop-blur-xl">
-                <Code2 className="w-10 h-10 text-blue-400" />
-              </div>
-            </div>
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight">
-              <span className="gradient-text-glow">CodePulse</span>
-            </h1>
-          </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed"
-          >
-            Transform any GitHub profile into a stunning, shareable 
-            <span className="text-white font-medium"> developer intelligence report</span>
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-500"
-          >
-            <Sparkles className="w-4 h-4 text-yellow-400" />
-            <span>Discover insights that GitHub never shows</span>
-          </motion.div>
-        </motion.div>
-
-        {/* Search */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <SearchBar
-            value={username}
-            onChange={setUsername}
-            onSearch={() => setSearchedUser(username)}
-            isLoading={isLoading}
-          />
-        </motion.div>
-
-        {/* Error Display */}
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="mt-6 max-w-2xl mx-auto"
-            >
-              <ErrorDisplay error={error} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Results */}
-        <AnimatePresence mode="wait">
-          {data && (
-            <motion.div
-              key="dashboard"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="mt-8 md:mt-12"
-            >
-              <DeveloperDashboard data={data} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Footer Stats */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="mt-16 md:mt-20 flex flex-wrap justify-center gap-6 md:gap-8 text-sm text-gray-500"
-        >
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <motion.span
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 + index * 0.1 }}
-                className="flex items-center gap-2"
-              >
-                <Icon className={`w-4 h-4 ${stat.color}`} />
-                {stat.label}
-              </motion.span>
-            );
-          })}
-        </motion.div>
-      </div>
-    </div>
-  );
+ const [username,setUsername]=useState(''); const [searchedUser,setSearchedUser]=useState('');
+ const {data,isLoading,error}=useQuery({queryKey:['profile',searchedUser],queryFn:()=>analyzeProfile(searchedUser),enabled:!!searchedUser,staleTime:300000,retry:(count,err:any)=>err?.status===404||err?.status===429?false:count<2});
+ const submit=()=>setSearchedUser(username.trim());
+ return <main className="min-h-screen overflow-hidden bg-zinc-950 page-grid"><div className="relative mx-auto max-w-7xl px-5 pb-16 sm:px-8">
+  <nav className="flex items-center justify-between border-b border-white/10 py-5"><a href="/" className="focus-ring flex items-center gap-2 text-zinc-100"><span className="grid size-8 place-items-center rounded-lg bg-fuchsia-400/15 text-fuchsia-300"><Radar className="size-4" /></span><span className="font-semibold tracking-tight">CodePulse</span></a><div className="hidden items-center gap-7 text-sm text-zinc-500 sm:flex"><a href="#how-it-works" className="hover:text-zinc-200">How it works</a><a href="#report" className="hover:text-zinc-200">Sample report</a><a href="#analyze" className="focus-ring rounded-full bg-zinc-100 px-4 py-2 font-semibold text-zinc-950 hover:bg-white">Analyze profile</a></div><a href="https://github.com" target="_blank" rel="noreferrer" aria-label="Open GitHub" className="focus-ring sm:hidden"><Github className="size-5 text-zinc-500" /></a></nav>
+  {!data && <section id="analyze" className="grid items-center gap-12 py-20 md:grid-cols-[1.05fr_.95fr] md:py-28"><div><div className="mb-6 inline-flex items-center gap-2 rounded-full border border-fuchsia-300/20 bg-fuchsia-300/5 px-3 py-1.5 font-mono-label text-[10px] text-fuchsia-200"><Sparkles className="size-3" /> Developer intelligence, without the guesswork</div><h1 className="max-w-3xl text-balance text-5xl font-semibold leading-[1.02] tracking-[-.06em] text-zinc-100 sm:text-7xl">See the signal behind <span className="accent-text">the commits.</span></h1><p className="mt-6 max-w-xl text-pretty text-lg leading-8 text-zinc-400">CodePulse turns a public GitHub profile into a clear read on craft, consistency, complexity, and collaboration.</p><div className="mt-10"><SearchBar value={username} onChange={setUsername} onSearch={submit} isLoading={isLoading} /></div><div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-xs text-zinc-500"><span className="flex items-center gap-2"><ShieldCheck className="size-4 text-cyan-300" /> Public data only</span><span className="flex items-center gap-2"><ArrowUpRight className="size-4 text-fuchsia-300" /> Shareable by design</span></div></div><div id="report"><SampleReport /></div></section>}
+  {isLoading && <div className="surface mx-auto my-16 max-w-2xl rounded-3xl p-8 text-center"><div className="mx-auto mb-4 size-10 animate-spin rounded-full border-2 border-zinc-700 border-t-fuchsia-300" /><p className="font-mono-label text-xs text-fuchsia-200">Reading public signals</p><p className="mt-2 text-sm text-zinc-500">Pulling repositories, activity, and collaboration data.</p></div>}
+  <AnimatePresence>{error && <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} className="mx-auto max-w-2xl"><ErrorDisplay error={error} /></motion.div>}</AnimatePresence>
+  {data && <section className="py-12"><div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="font-mono-label text-xs text-fuchsia-300">Analysis complete</p><h2 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-100">Developer intelligence report</h2></div><a href="#analyze" className="flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-100">Analyze another <ArrowDown className="size-4 rotate-[-90deg]" /></a></div><DeveloperDashboard data={data} /></section>}
+  {!data && <section id="how-it-works" className="grid gap-4 border-t border-white/10 py-14 sm:grid-cols-3">{[['01','Connect','Enter any public GitHub username.'],['02','Analyze','We read the work, not the follower count.'],['03','Share','Keep a clean report you can send anywhere.']].map(([number,title,copy])=><div key={number} className="py-3"><p className="font-mono text-xs text-fuchsia-300">{number}</p><h3 className="mt-5 text-lg font-semibold text-zinc-100">{title}</h3><p className="mt-2 text-sm leading-6 text-zinc-500">{copy}</p></div>)}</section>}
+ </div></main>;
 }

@@ -1,5 +1,5 @@
-// frontend/src/components/DeveloperDashboard.tsx
 import { motion } from 'framer-motion';
+import { Activity, GitFork, Github, Star, Users } from 'lucide-react';
 import type { DeveloperReport } from '../services/api';
 import { ProfileHeader } from './ProfileHeader';
 import { ScoreGrid } from './ScoreGrid';
@@ -8,74 +8,13 @@ import { ActivitySummary } from './ActivitySummary';
 import { RepositoryList } from './RepositoryList';
 import { ShareButton } from './ShareButton';
 
-interface DeveloperDashboardProps {
-  data: DeveloperReport;
-}
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
-
-export function DeveloperDashboard({ data }: DeveloperDashboardProps) {
-  return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-6 md:space-y-8"
-    >
-      {/* Profile Header */}
-      <motion.div variants={itemVariants}>
-        <ProfileHeader data={data} />
-      </motion.div>
-
-      {/* Score Grid */}
-      <motion.div variants={itemVariants}>
-        <ScoreGrid data={data} />
-      </motion.div>
-
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <motion.div variants={itemVariants}>
-          <LanguageChart languages={data.top_languages} />
-        </motion.div>
-        <motion.div variants={itemVariants}>
-          <ActivitySummary data={data} />
-        </motion.div>
-      </div>
-
-      {/* Repository List */}
-      <motion.div variants={itemVariants}>
-        <RepositoryList repos={data.repo_complexity_breakdown} />
-      </motion.div>
-
-      {/* Share Section */}
-      <motion.div 
-        variants={itemVariants}
-        className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-2xl border border-white/5"
-      >
-        <div className="text-center sm:text-left">
-          <p className="text-sm text-gray-400">
-            Share your developer report with the world
-          </p>
-          <p className="text-xs text-gray-500">
-            Generate a permanent, shareable link
-          </p>
-        </div>
-        <ShareButton username={data.username} />
-      </motion.div>
-    </motion.div>
-  );
+export function DeveloperDashboard({ data }: { data: DeveloperReport }) {
+ const kpis=[['Commits / 90d',data.total_commits_90d,Activity],['Active days',data.active_days_90d,Activity],['Stars collected',data.total_stars,Star],['Collaborators',data.total_collaborators,Users]] as const;
+ return <motion.div initial={{opacity:0}} animate={{opacity:1}} className="flex flex-col gap-6">
+  <ProfileHeader data={data}/><ScoreGrid data={data}/>
+  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{kpis.map(([label,value,Icon])=><div key={label} className="surface rounded-2xl p-4"><div className="flex items-center justify-between"><span className="font-mono-label text-[10px] text-zinc-500">{label}</span><Icon className="size-4 text-zinc-600"/></div><p className="mt-3 text-2xl font-semibold text-zinc-100">{Number(value).toLocaleString()}</p></div>)}</div>
+  <div className="grid gap-6 lg:grid-cols-2"><LanguageChart languages={data.top_languages}/><ActivitySummary data={data}/></div>
+  <RepositoryList repos={data.repo_complexity_breakdown}/>
+  <div className="surface flex flex-col gap-5 rounded-3xl p-6 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-mono-label text-[10px] text-fuchsia-300">Make it portable</p><h3 className="mt-2 text-xl font-semibold text-zinc-100">Share your developer signal.</h3><p className="mt-1 text-sm text-zinc-500">Create a permanent link to this report.</p></div><ShareButton username={data.username}/></div>
+ </motion.div>;
 }
