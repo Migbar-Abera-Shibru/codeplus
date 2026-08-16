@@ -1,175 +1,59 @@
-// frontend/src/pages/Analyze.tsx
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Activity, ArrowRight, BarChart3, Code2, GitBranch, Github, Network, Search, Sparkles, Users, Zap } from 'lucide-react';
 import { analyzeProfile } from '../services/api';
 import { SearchBar } from '../components/SearchBar';
 import { DeveloperDashboard } from '../components/DeveloperDashboard';
 import { ErrorDisplay } from '../components/ErrorDisplay';
-import { 
-  Code2, 
-  Github, 
-  TrendingUp, 
-  Users, 
-  GitBranch,
-  Sparkles,
-  Zap,
-  Star,
-  Activity
-} from 'lucide-react';
 
-export function AnalyzePage() {
-  const [username, setUsername] = useState<string>('');
-  const [searchedUser, setSearchedUser] = useState<string>('');
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
+const examples = ['torvalds', 'gaearon', 'addyosmani'];
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['profile', searchedUser],
-    queryFn: () => analyzeProfile(searchedUser),
-    enabled: !!searchedUser,
-    staleTime: 1000 * 60 * 5,
-    retry: (failureCount, error: any) => {
-      if (error?.status === 404 || error?.status === 429) return false;
-      return failureCount < 2;
-    },
-  });
-
-  useEffect(() => {
-    if (data) setIsFirstLoad(false);
-  }, [data]);
-
-  const stats = [
-    { icon: Github, label: 'Powered by GitHub API', color: 'text-gray-400' },
-    { icon: TrendingUp, label: 'Real-time analysis', color: 'text-gray-400' },
-    { icon: Users, label: 'Public profiles', color: 'text-gray-400' },
-    { icon: GitBranch, label: 'Open source', color: 'text-gray-400' },
-  ];
-
+function ReportPreview() {
   return (
-    <div className="min-h-screen bg-[#05050a] overflow-hidden">
-      {/* Animated Background Orbs */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="orb w-[600px] h-[600px] -top-48 -left-48 bg-blue-600/20" />
-        <div className="orb w-[500px] h-[500px] top-1/2 -right-48 bg-purple-600/20" />
-        <div className="orb w-[400px] h-[400px] bottom-0 left-1/2 bg-pink-600/10" />
-        <div className="absolute inset-0 bg-grid" />
+    <div className="preview-shell" aria-label="Sample CodePulse report preview">
+      <div className="preview-topline"><span className="eyebrow-dot" /> SAMPLE REPORT <span className="preview-live">LIVE SIGNAL</span></div>
+      <div className="preview-profile">
+        <div className="preview-avatar">G</div>
+        <div><p className="preview-name">@gaearon <span className="verified">✓</span></p><p className="preview-role">React &amp; open-source systems</p><p className="preview-meta">San Francisco · 12 languages · 178 repos</p></div>
+        <div className="preview-score"><strong>87</strong><span>INTELLIGENCE<br />SCORE</span></div>
       </div>
-
-      {/* Main Content */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center mb-12 md:mb-16"
-        >
-          <motion.div
-            className="flex items-center justify-center gap-3 mb-6"
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur-2xl opacity-50 animate-pulse-ring" />
-              <div className="relative p-4 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl border border-white/10 backdrop-blur-xl">
-                <Code2 className="w-10 h-10 text-blue-400" />
-              </div>
-            </div>
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight">
-              <span className="gradient-text-glow">CodePulse</span>
-            </h1>
-          </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed"
-          >
-            Transform any GitHub profile into a stunning, shareable 
-            <span className="text-white font-medium"> developer intelligence report</span>
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-500"
-          >
-            <Sparkles className="w-4 h-4 text-yellow-400" />
-            <span>Discover insights that GitHub never shows</span>
-          </motion.div>
-        </motion.div>
-
-        {/* Search */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <SearchBar
-            value={username}
-            onChange={setUsername}
-            onSearch={() => setSearchedUser(username)}
-            isLoading={isLoading}
-          />
-        </motion.div>
-
-        {/* Error Display */}
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="mt-6 max-w-2xl mx-auto"
-            >
-              <ErrorDisplay error={error} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Results */}
-        <AnimatePresence mode="wait">
-          {data && (
-            <motion.div
-              key="dashboard"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="mt-8 md:mt-12"
-            >
-              <DeveloperDashboard data={data} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Footer Stats */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="mt-16 md:mt-20 flex flex-wrap justify-center gap-6 md:gap-8 text-sm text-gray-500"
-        >
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <motion.span
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 + index * 0.1 }}
-                className="flex items-center gap-2"
-              >
-                <Icon className={`w-4 h-4 ${stat.color}`} />
-                {stat.label}
-              </motion.span>
-            );
-          })}
-        </motion.div>
+      <div className="preview-kpis">{[['REPOSITORIES','178'],['FOLLOWERS','93.4k'],['CONTRIBUTIONS','5,482'],['STARS','12.7k']].map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div>
+      <div className="preview-panels">
+        <div className="mini-panel"><div className="mini-heading"><span>LANGUAGE EVOLUTION</span><small>LAST 2 YEARS</small></div><div className="mini-chart"><i /><i /><i /><i /><i /><i /></div><div className="chart-legend"><span>TypeScript</span><span>JavaScript</span><span>Other</span></div></div>
+        <div className="mini-panel pulse-panel"><div className="mini-heading"><span>CONTRIBUTION PULSE</span><small>LAST 90 DAYS</small></div><div className="heatmap">{Array.from({ length: 56 }, (_, index) => <b key={index} className={`heat-${index % 5}`} />)}</div><div className="pulse-number"><strong>362</strong><span>commits tracked</span></div></div>
       </div>
     </div>
   );
 }
+
+function HowItWorks() {
+  const steps = [
+    { icon: Search, number: '01', title: 'Enter a username', copy: 'Give CodePulse a public GitHub profile to analyze.' },
+    { icon: Activity, number: '02', title: 'We analyze the signal', copy: 'We process repositories, commits, languages, and collaboration patterns.' },
+    { icon: Network, number: '03', title: 'Discover your insights', copy: 'Get a clear developer intelligence report built from your real activity.' },
+  ];
+  return <section className="how-section"><div className="section-kicker">HOW IT WORKS</div><h2>From username to <span>developer intelligence.</span></h2><div className="steps-grid">{steps.map(({ icon: Icon, number, title, copy }) => <article className="step-card" key={number}><div className="step-icon"><Icon /></div><div><span className="step-number">{number}</span><h3>{title}</h3><p>{copy}</p></div></article>)}</div></section>;
+}
+
+export function AnalyzePage() {
+  const [username, setUsername] = useState('');
+  const [searchedUser, setSearchedUser] = useState('');
+  const { data, isLoading, error } = useQuery({ queryKey: ['profile', searchedUser], queryFn: () => analyzeProfile(searchedUser), enabled: Boolean(searchedUser), staleTime: 300000, retry: 1 });
+  useEffect(() => { if (data) window.scrollTo({ top: 0, behavior: 'smooth' }); }, [data]);
+
+  return <main className="site-shell">
+    <div className="atmosphere atmosphere-one" /><div className="atmosphere atmosphere-two" /><div className="grid-texture" />
+    <header className="site-nav"><a className="brand" href="/"><span className="brand-mark"><Activity /></span><span>Code<span>Pulse</span></span></a><nav><a href="#features">Features</a><a href="#how-it-works">How it works</a><a href="#insights">Insights</a><a href="#about">About</a></nav><a className="nav-cta" href="#analyze">Analyze Profile <ArrowRight /></a></header>
+    <section className="hero" id="analyze"><div className="hero-copy"><div className="eyebrow"><Sparkles /> DEVELOPER INTELLIGENCE</div><h1>Your GitHub profile<br />has a story.<br /><span>We turn it into data.</span></h1><p className="hero-lede">Analyze any public GitHub profile and discover the patterns behind their code — from language evolution and consistency to project complexity and collaboration.</p><SearchBar value={username} onChange={setUsername} onSearch={() => setSearchedUser(username.trim())} isLoading={isLoading} /><p className="search-note">Public GitHub profiles only <b>•</b> No login required</p><div className="examples"><span>Try these examples</span>{examples.map(example => <button type="button" key={example} onClick={() => { setUsername(example); setSearchedUser(example); }}>{example}</button>)}<button type="button" onClick={() => document.querySelector<HTMLInputElement>('input')?.focus()}>your username</button></div></div><div className="hero-visual"><ReportPreview /></div></section>
+    <section className="trust-strip" id="features">{[[Github,'Powered by GitHub API'],[Zap,'Real-time analysis'],[Users,'Public profiles'],[GitBranch,'Shareable reports'],[Code2,'Open source']].map(([Icon, label]) => <div key={label as string}><Icon /><span>{label as string}</span></div>)}</section>
+    <AnimatePresence>{error && <motion.div className="error-wrap" initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}><ErrorDisplay error={error} /></motion.div>}</AnimatePresence>
+    {isLoading && <section className="analysis-state"><div className="spinner-orbit"><Activity /></div><div><div className="section-kicker">ANALYZING GITHUB PROFILE</div><h2>@{searchedUser}</h2><p>Reading the signal across repositories, languages, and contribution patterns.</p></div></section>}
+    {data && <section className="report-wrap"><DeveloperDashboard data={data} /></section>}
+    {!data && !isLoading && <HowItWorks />}
+    <section className="insight-band" id="insights"><div><div className="section-kicker">THE SIGNAL BEHIND THE CODE</div><h2>GitHub gives you activity.<br /><span>CodePulse gives you context.</span></h2></div><div className="insight-list"><div><BarChart3 /><strong>Language evolution</strong><small>See how your technical vocabulary changes over time.</small></div><div><Network /><strong>Collaboration signal</strong><small>Understand how you build with the people around you.</small></div></div></section>
+    <footer id="about"><span className="brand"><span className="brand-mark"><Activity /></span>Code<span>Pulse</span></span><span>Developer intelligence for the open web.</span></footer>
+  </main>;
+}
+
+export default AnalyzePage;
